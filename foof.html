@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Caça Palavras - Descolonização da África</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #2c3e50;
+    }
+
+    #wordsearch {
+      display: grid;
+      grid-template-columns: repeat(14, 30px);
+      grid-gap: 2px;
+      justify-content: center;
+      margin: 20px auto;
+    }
+
+    .cell {
+      width: 30px;
+      height: 30px;
+      background: #fff;
+      border: 1px solid #ccc;
+      font-size: 18px;
+      text-transform: uppercase;
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cell.selected {
+      background-color: #3498db;
+      color: #fff;
+    }
+
+    .cell.found {
+      background-color: #2ecc71;
+    }
+
+    #words {
+      margin-top: 20px;
+    }
+
+    .word {
+      font-weight: bold;
+      margin: 5px;
+      display: inline-block;
+    }
+
+    .found-word {
+      text-decoration: line-through;
+      color: gray;
+    }
+  </style>
+</head>
+<body>
+  <h1>Caça Palavras: Descolonização da África</h1>
+  <div id="wordsearch"></div>
+  <h3>Encontre as palavras:</h3>
+  <div id="words"></div>
+
+  <script>
+    const words = [
+      "ÁFRICA",
+      "GUERRAS",
+      "INDEPENDÊNCIA",
+      "COLONIALISMO",
+      "IMPERIALISMO",
+      "LIBERDADE",
+      "REVOLUÇÃO"
+    ];
+
+    const gridSize = 14;
+    const grid = Array.from({ length: gridSize }, () => Array(gridSize).fill(""));
+
+    function placeWord(word) {
+      const directions = [
+        [0, 1], [1, 0], [1, 1], [-1, 1]
+      ];
+
+      while (true) {
+        const dir = directions[Math.floor(Math.random() * directions.length)];
+        const row = Math.floor(Math.random() * gridSize);
+        const col = Math.floor(Math.random() * gridSize);
+
+        let fits = true;
+        for (let i = 0; i < word.length; i++) {
+          const r = row + dir[0] * i;
+          const c = col + dir[1] * i;
+          if (
+            r < 0 || r >= gridSize ||
+            c < 0 || c >= gridSize ||
+            (grid[r][c] && grid[r][c] !== word[i])
+          ) {
+            fits = false;
+            break;
+          }
+        }
+
+        if (fits) {
+          for (let i = 0; i < word.length; i++) {
+            const r = row + dir[0] * i;
+            const c = col + dir[1] * i;
+            grid[r][c] = word[i];
+          }
+          break;
+        }
+      }
+    }
+
+    function fillGrid() {
+      for (let row = 0; row < gridSize; row++) {
+        for (let col = 0; col < gridSize; col++) {
+          if (!grid[row][col]) {
+            grid[row][col] = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+          }
+        }
+      }
+    }
+
+    words.forEach(w => placeWord(w.toUpperCase()));
+    fillGrid();
+
+    const wordsearch = document.getElementById("wordsearch");
+
+    for (let row = 0; row < gridSize; row++) {
+      for (let col = 0; col < gridSize; col++) {
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.dataset.row = row;
+        cell.dataset.col = col;
+        cell.textContent = grid[row][col];
+        wordsearch.appendChild(cell);
+      }
+    }
+
+    const wordsDiv = document.getElementById("words");
+    words.forEach(word => {
+      const span = document.createElement("span");
+      span.classList.add("word");
+      span.textContent = word;
+      span.id = "word-" + word;
+      wordsDiv.appendChild(span);
+    });
+
+    let selected = [];
+
+    function getWordFromSelection() {
+      return selected.map(cell => cell.textContent).join("");
+    }
+
+    function resetSelection() {
+      selected.forEach(cell => cell.classList.remove("selected"));
+      selected = [];
+    }
+
+    wordsearch.addEventListener("click", e => {
+      if (!e.target.classList.contains("cell")) return;
+
+      const cell = e.target;
+      if (cell.classList.contains("found")) return;
+
+      if (!selected.includes(cell)) {
+        cell.classList.add("selected");
+        selected.push(cell);
+
+        const formedWord = getWordFromSelection();
+
+        words.forEach(word => {
+          if (formedWord === word) {
+            selected.forEach(c => {
+              c.classList.remove("selected");
+              c.classList.add("found");
+            });
+            document.getElementById("word-" + word).classList.add("found-word");
+            selected = [];
+          }
+        });
+
+        if (formedWord.length > 15) {
+          resetSelection();
+        }
+      } else {
+        cell.classList.remove("selected");
+        selected = selected.filter(c => c !== cell);
+      }
+    });
+  </script>
+</body>
+</html>
